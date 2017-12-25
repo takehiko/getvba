@@ -14,7 +14,7 @@ docker build --rm -t takehiko/getvba .
 ## running
 
 ```sh
-docker run --rm -d --name getvba takehiko/getvba
+docker run --rm -d -p 8000:8000 --name getvba takehiko/getvba
 ```
 
 ## browsing
