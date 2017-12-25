@@ -1,0 +1,89 @@
+#!/usr/local/bin/python3
+
+import cgi
+import cgitb
+import os
+import tempfile
+import subprocess
+import codecs
+import time
+import re
+
+def generate_html2(form):
+    if not "f" in form:
+        return ""
+
+    path_python = os.getenv("PATH_PYTHON", "/usr/bin/python2")
+    path_olevba = os.getenv("PATH_OLEVBA", "/usr/local/lib/python3.5/site-packages/oletools/olevba.py")
+    path_nkf = os.getenv("PATH_NKF", "/usr/bin/nkf")
+    html2 = ""
+
+    fileitem = form["f"]
+    if not fileitem.file:
+        return "<p>ファイルの受け取りに失敗しました（f=" + fileitem.value + "）。<hr>"
+
+    filename = fileitem.filename
+    content = fileitem.value
+    if len(content) == 0:
+        return "<p>ファイルが選択されていないか、サイズ0のファイルをアップロードしました。<hr>"
+
+    html2_temp = "<p>ファイル {0}（{1}バイト）を受け取りました。"
+    html2 = html2_temp.format(filename, len(content))
+
+    if re.search(r"xlsm$", filename) == None:
+        return html2 + "xlsmファイルでないためマクロは取り出せません。<hr>"
+
+    tmp_fh, tmp_filename = tempfile.mkstemp()
+    with os.fdopen(tmp_fh, "wb") as fh:
+        fh.write(content)
+    # html2 += "<p>デバッグ:" + tmp_filename
+
+    tmp_fh2, tmp_filename2 = tempfile.mkstemp()
+    with os.fdopen(tmp_fh2, "w") as fh2:
+        subprocess.Popen([path_python, path_olevba, "-c", "--decode", tmp_filename], stdout=fh2, stderr=fh2)
+
+    time.sleep(0.5)
+    # vba = subprocess.check_output(["ls", "-aFl", tmp_filename2], stderr=subprocess.STDOUT)
+    vba = subprocess.check_output([path_nkf, "-w", tmp_filename2], stderr=subprocess.STDOUT)
+    vba = vba.decode("utf-8").replace(tmp_filename, "****")
+
+    html2 += "<p>取り出したマクロは以下のとおりです。"
+    html2 += "<hr>\n"
+    html2 += "<pre>\n"
+    html2 += vba
+    html2 += "</pre>\n"
+    html2 += "<hr>\n"
+    # html2 += "<p>デバッグ:" + tmp_filename + " " + tmp_filename2
+    # html2 += "<p>デバッグ: len(vba)=" + str(len(vba))
+    os.remove(tmp_filename)
+    os.remove(tmp_filename2)
+    return html2
+
+header = "Content-type: text/html\n\n"
+html1 = """
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>VBA取り出し</title>
+</head>
+<body>
+"""
+
+form = cgi.FieldStorage()
+html2 = generate_html2(form)
+
+html3 = """
+<form action="vba" method="post" enctype="multipart/form-data">
+<p>拡張子が「.xlsm」のファイル（Excelマクロ有効ブック）をアップロードすれば、VBAを取り出して表示します。
+<p><input type="file" name="f" size="40">
+<p><input type="submit" value="アップロードする">
+</form>
+</body>
+</html>
+"""
+
+print(header)
+print(html1)
+print(html2)
+print(html3)
