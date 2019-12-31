@@ -13,8 +13,8 @@ def generate_html2(form):
     if not "f" in form:
         return ""
 
-    path_python = os.getenv("PATH_PYTHON", "/usr/bin/python2")
-    path_olevba = os.getenv("PATH_OLEVBA", "/usr/local/lib/python3.5/site-packages/oletools/olevba.py")
+    path_python = os.getenv("PATH_PYTHON", "/usr/local/bin/python")
+    path_olevba = os.getenv("PATH_OLEVBA", "/usr/local/lib/python3.8/site-packages/oletools/olevba.py")
     path_nkf = os.getenv("PATH_NKF", "/usr/bin/nkf")
     html2 = ""
 

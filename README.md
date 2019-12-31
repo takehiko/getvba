@@ -1,6 +1,6 @@
 # getvba
 
-A web interface for olevba, a script included in [oletools](https://www.decalage.info/python/oletools).
+A web interface for olevba, a script included in [oletools](https://github.com/decalage2/oletools).
 You can extract VBA macros from your *.xlsm files, without running Microsoft Excel.
 
 ## how to build
@@ -8,7 +8,7 @@ You can extract VBA macros from your *.xlsm files, without running Microsoft Exc
 ```sh
 git clone git@github.com:takehiko/getvba.git
 cd getvba
-docker build --rm -t takehiko/getvba .
+docker build -t takehiko/getvba .
 ```
 
 ## running
